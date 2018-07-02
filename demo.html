@@ -94,20 +94,64 @@ function itx(pixelX) { return (pixelX - 0.5) * graphWidth / canvasWidth - w; }
 function ity(pixelY) { return h - (pixelY - 0.5) * graphHeight / canvasHeight; }
 
 // sample signal functions
-function sinc(x) { return (x == 0) ? 1 : Math.sin(Math.PI * x) / (Math.PI * x); }
-function circle(x) { return (x > -1 && x < 1) ? Math.sqrt(1 - x*x) : 0; }
-function triangle(x) { return Math.max(0, 1 - Math.abs(x)); }
-function sawtooth(x) { return x - Math.floor(x); }
-function gaussian(x) { return Math.exp(-x*x); }
-function spike(x) { return x == 0; }
-function pow(x, n) { return Math.pow(x, n); }
-function sqrt(x) { return Math.sqrt(x); }
-function sin(x) { return Math.sin(x * Math.PI); }
-function cos(x) { return Math.cos(x * Math.PI); }
-function box(x) { return (x > -1 && x < 1); }
+var pi = Math.PI;
 function abs(x) { return Math.abs(x); }
+function box(x) { return (x > -1 && x < 1); }
+function cbrt(x) { return root(x, 3); }
+function circle(x) { return (x > -1 && x < 1) ? Math.sqrt(1 - x*x) : 0; }
+function cos(x) { return Math.cos(x * pi); }
+function cubic(x) { return x*x*x + x*x + x; }
 function exp(x) { return Math.exp(x); }
-function rand() { return Math.random(); }
+function gaussian(x) { return Math.exp(-x*x); }
+function linear(x) { return x; }
+function log(x) { return Math.log(x); }
+function log10(x) { return Math.log10(x); }
+function log1p(x) { return Math.log1p(x); }
+function log2(x) { return Math.log2(x); }
+function logN(x, b) { return Math.log(x) / Math.log(b) };
+function pow(x, n) { return Math.pow(x, n); }
+function quadratic(x) { return x*x + x; }
+function quartic(x) { return x*x*x*x + x*x*x + x*x + x; }
+function quintic(x) { return x*x*x*x*x + x*x*x*x + x*x*x + x*x + x; }
+function rand() { return Math.random() * pi; }
+function rational(f, g, x) { return f(x) / g(x); }
+function sawtooth(x) { return x - Math.floor(x); }
+function sin(x) { return Math.sin(x * pi); }
+function sinc(x) { return (x == 0) ? 1 : Math.sin(pi * x) / (pi * x); }
+function spike(x) { return x == 0; }
+function sqrt(x) { return Math.sqrt(x); }
+function tan(x) { return Math.tan(x * pi); }
+function triangle(x) { return Math.max(0, 1 - Math.abs(x)); }
+function noise(x) { return noiseSin(x); }
+function noiseSin(x) {
+  var y = Math.sin(2 * x);
+  var z = 0.0;
+  if(y > 0.8) z = 1.0;
+  return (z + Math.random());
+}
+function noiseCos(x) {
+  var y = Math.cos(2 * x);
+  var z = 0.0;
+  if (y > 0.8) z = 1.0;
+  return (z + Math.random());
+}
+function noiseTan(x) {
+  var y = Math.tan(2 * x);
+  var z = 0.0;
+  if (y > 0.8) z = 1.0;
+  return (z + Math.random());
+}
+
+function root(a, n) {
+  var precision = 10,
+      estimate = a / n;
+  
+  for (var i = 0; i < precision; i++) {
+    estimate = (estimate / n) * (a / (Math.pow(estimate, n)) + n - 1);
+  }
+
+  return estimate;
+}
 
 // the function extends from -functionExtent to functionExtent
 var functionExtent = 8;
@@ -272,8 +316,8 @@ function plot(f) {
   drawGraph(spatialCanvas, 'Signal in spatial domain', true);
   drawGraph(frequencyCanvas,
     (hasRealPart && hasImagPart) ? 'Signal in frequency domain (real in blue, imaginary in green)'
-    : hasRealPart ? 'Real part of signal in frequency domain (imaginary part is all 0)'
-    : 'Imaginary part of signal in frequency domain (real part is all 0)',
+    : hasRealPart ? 'Real part of signal in frequency domain'
+    : 'Imaginary part of signal in frequency domain',
     false);
   drawGraph(reconstructedCanvas, 'Reconstructed signal in spatial domain', true);
 
@@ -281,7 +325,7 @@ function plot(f) {
     var c = frequencyCanvas.getContext('2d');
     c.fillStyle = 'black';
     c.font = '12px "Segoe UI", sans-serif';
-    c.fillText('Mouse over to chop off tails', canvasWidth / 2 - 70, canvasHeight - 10);
+    c.fillText('Frequency', canvasWidth / 2 - 70, canvasHeight - 10);
   }
 
   // only show the parts that aren't zero
@@ -379,7 +423,7 @@ window.onload = function() {
   </p>
   <p>The Fourier transform is actually implemented using complex numbers, where the real part is the weight of the cosine and the imaginary part is the weight of the sine.&nbsp; On the second plot, a blue spike is a real (cosine) weight and a green spike is an imaginary (sine) weight.&nbsp; This is why <a href="javascript:enter('cos(x)')">cos(<i>x</i>)</a> shows up blue and <a href="javascript:enter('sin(x)')">sin(<i>x</i>)</a> shows up green.&nbsp; Most signals have both sines and cosines in them, like <a href="javascript:enter('triangle(abs(x) + sin(x))')">triangle(abs(<i>x</i>) + sin(<i>x</i>))</a>.</p>
   <p>It turns out that signals and their Fourier transforms come in pairs, called duals, that are each the Fourier transform of the other.&nbsp; For example, the Fourier transform of <a href="javascript:enter('cos(2*x)')">cos(2*<i>x</i>)</a> is two spikes at <i>x</i> = &plusmn;1 and the Fourier transform of <a href="javascript:enter('spike(x - 1) + spike(x + 1)')">spike(<i>x</i> &minus; 1) + spike(<i>x</i> + 1)</a> is cos(2*<i>x</i>), so cos(2*<i>x</i>) and spike(<i>x</i> &plusmn; 1) are duals.</p>
-  <p>Perhaps the most important dual is <a href="javascript:enter('box(x)')">box(<i>x</i>)</a> with <a href="javascript:enter('sinc(x)')">sinc(<i>x</i>)</a>.&nbsp; The (normalized) sinc function is defined as sinc(<i>x</i>) = sin(<span class="symbol">&pi;</span><i>x</i>) / (<span class="symbol">&pi;</span><i>x</i>), and is problematic because it is infinite in width.&nbsp; This is why the Fourier transform of <a href="javascript:enter('sinc(x)')">sinc(<i>x</i>)</a> doesn&rsquo;t quite give a box in the frequency domain, the &ldquo;ringing&rdquo; is caused by chopping off the tails of sinc at the sides of the plot (in our case at <i>x</i> = &plusmn;8).&nbsp; Other duals of interest are <a href="javascript:enter('triangle(x)')">triangle(<i>x</i>)</a> with <a href="javascript:enter('pow(sinc(x), 2)')">sinc<sup>2</sup>(<i>x</i>)</a> and <a href="javascript:enter('gaussian(x)')">gaussian(<i>x</i>)</a> with itself.</p>
+  <p>Perhaps the most important dual is <a href="javascript:enter('box(x)')">box(<i>x</i>)</a> with <a href="javascript:enter('sinc(x)')">sinc(<i>x</i>)</a>.&nbsp; The (normalised) sinc function is defined as sinc(<i>x</i>) = sin(<span class="symbol">&pi;</span><i>x</i>) / (<span class="symbol">&pi;</span><i>x</i>), and is problematic because it is infinite in width.&nbsp; This is why the Fourier transform of <a href="javascript:enter('sinc(x)')">sinc(<i>x</i>)</a> doesn&rsquo;t quite give a box in the frequency domain, the &ldquo;ringing&rdquo; is caused by chopping off the tails of sinc at the sides of the plot (in our case at <i>x</i> = &plusmn;8).&nbsp; Other duals of interest are <a href="javascript:enter('triangle(x)')">triangle(<i>x</i>)</a> with <a href="javascript:enter('pow(sinc(x), 2)')">sinc<sup>2</sup>(<i>x</i>)</a> and <a href="javascript:enter('gaussian(x)')">gaussian(<i>x</i>)</a> with itself.</p>
   <p>To see how each spike contributes to the final reconstructed signal, move your mouse around inside the second plot to &ldquo;chop off&rdquo; the tails of the signal.&nbsp; Observe how the third plot (the result of the inverse discrete Fourier transform) changes as you add or remove sines and cosines from the sum, for example in <a href="javascript:enter('box(x/2) + box(x)/2 - gaussian(x/2) + triangle(abs(x)-5) + box(abs(x)-8)')">this crazy function</a>.</p>
   <div class="input">f(x) = <input id="input" type="text" value="box(x)"></div>
   <canvas id="spatial" width="800" height="200"><span class="error">Your browser doesn't support the HTML5 &lt;canvas&gt; element.</span></canvas>
@@ -392,5 +436,4 @@ window.onload = function() {
     <a href="javascript:size(128)">128</a>,
     <a href="javascript:size(256)">256</a>)
   </p>
-  <p class="center credit">Original demo made by <a href="http://madebyevan.com/">Evan Wallace</a> in 2010</p>
 </body></html>
