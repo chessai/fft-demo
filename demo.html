@@ -123,6 +123,12 @@ function sqrt(x) { return Math.sqrt(x); }
 function tan(x) { return Math.tan(x * pi); }
 function triangle(x) { return Math.max(0, 1 - Math.abs(x)); }
 function noise(x) { return noiseSin(x); }
+function jitter(x) {
+  var y = Math.sin(3 * x + rand() * 0.4);
+  var z = 0.0;
+  if(y > 0.9) z = 0.8;
+  return z
+}
 function noiseSin(x) {
   var y = Math.sin(2 * x);
   var z = 0.0;
@@ -407,20 +413,8 @@ window.onload = function() {
   </script>
 </head><body>
   <h1>Discrete Fourier Transform Demo</h1>
-  <p>This page demonstrates the discrete Fourier transform, which rewrites a discrete signal as a weighted sum of sines and cosines of various frequencies.&nbsp; All even functions (when <i>f</i>(<i>x</i>)&nbsp;=&nbsp;<i>f</i>(&minus;<i>x</i>)) only consist of cosines since cosine is an odd function, and all odd functions (when <i>f</i>(<i>x</i>)&nbsp;=&nbsp;&minus;<i>f</i>(&minus;<i>x</i>)) only consist of sines since sine is an odd function, other functions are a mix of sines and cosines.</p>
+  <p>This page demonstrates the discrete Fourier transform, which rewrites a discrete signal as a weighted sum of sines and cosines of various frequencies.&nbsp;</p>
   <p>The demo below performs the discrete Fourier transform on the function <i>f</i>(<i>x</i>).&nbsp; The first plot shows <i>f</i>(<i>x</i>) from <i>x</i> = &minus;8 to <i>x</i> = 8 sampled in discrete steps (128 by default).&nbsp; The second plot shows the weights (on the y-axis) versus the frequencies (on the x-axis) of the sines and cosines that make up <i>f</i>(<i>x</i>).&nbsp; The units on the x-axis of the second plot are &ldquo;cycles per unit in the spatial domain,&rdquo; so a <a href="javascript:enter('cos(2*x)')">cosine wave</a> that repeats once every unit in the spatial domain will show up as a spike at &plusmn;1 in the frequency domain.&nbsp; The third plot shows the inverse discrete Fourier transform, which converts the sines and cosines back into the original function <i>f</i>(<i>x</i>).&nbsp; It has the same units as the first plot.</p>
-  <p>Each &ldquo;spike&rdquo; on the second plot is the magnitude of the sine or cosine at that frequency.&nbsp; Here are the first eight cosine waves (click on one to plot it).&nbsp; The division by 8 is because our signal extends from <i>x</i> = &minus;8 to <i>x</i> = 8, and the cos(<i>x</i>) function here actually repeats every 2 units instead of every 2<span class="symbol">&pi;</span> units for convenience.</p>
-  <p class="center">
-    <a href="javascript:enter('cos(x*0/8)')">cos(<i>x</i>*0/8)</a> &bull;
-    <a href="javascript:enter('cos(x*1/8)')">cos(<i>x</i>*1/8)</a> &bull;
-    <a href="javascript:enter('cos(x*2/8)')">cos(<i>x</i>*2/8)</a> &bull;
-    <a href="javascript:enter('cos(x*3/8)')">cos(<i>x</i>*3/8)</a> &bull;
-    <a href="javascript:enter('cos(x*4/8)')">cos(<i>x</i>*4/8)</a> &bull;
-    <a href="javascript:enter('cos(x*5/8)')">cos(<i>x</i>*5/8)</a> &bull;
-    <a href="javascript:enter('cos(x*6/8)')">cos(<i>x</i>*6/8)</a> &bull;
-    <a href="javascript:enter('cos(x*7/8)')">cos(<i>x</i>*7/8)</a> &bull;
-    <a href="javascript:enter('cos(x*8/8)')">cos(<i>x</i>*8/8)</a></a>
-  </p>
   <p>The Fourier transform is actually implemented using complex numbers, where the real part is the weight of the cosine and the imaginary part is the weight of the sine.&nbsp; On the second plot, a blue spike is a real (cosine) weight and a green spike is an imaginary (sine) weight.&nbsp; This is why <a href="javascript:enter('cos(x)')">cos(<i>x</i>)</a> shows up blue and <a href="javascript:enter('sin(x)')">sin(<i>x</i>)</a> shows up green.&nbsp; Most signals have both sines and cosines in them, like <a href="javascript:enter('triangle(abs(x) + sin(x))')">triangle(abs(<i>x</i>) + sin(<i>x</i>))</a>.</p>
   <p>It turns out that signals and their Fourier transforms come in pairs, called duals, that are each the Fourier transform of the other.&nbsp; For example, the Fourier transform of <a href="javascript:enter('cos(2*x)')">cos(2*<i>x</i>)</a> is two spikes at <i>x</i> = &plusmn;1 and the Fourier transform of <a href="javascript:enter('spike(x - 1) + spike(x + 1)')">spike(<i>x</i> &minus; 1) + spike(<i>x</i> + 1)</a> is cos(2*<i>x</i>), so cos(2*<i>x</i>) and spike(<i>x</i> &plusmn; 1) are duals.</p>
   <p>Perhaps the most important dual is <a href="javascript:enter('box(x)')">box(<i>x</i>)</a> with <a href="javascript:enter('sinc(x)')">sinc(<i>x</i>)</a>.&nbsp; The (normalised) sinc function is defined as sinc(<i>x</i>) = sin(<span class="symbol">&pi;</span><i>x</i>) / (<span class="symbol">&pi;</span><i>x</i>), and is problematic because it is infinite in width.&nbsp; This is why the Fourier transform of <a href="javascript:enter('sinc(x)')">sinc(<i>x</i>)</a> doesn&rsquo;t quite give a box in the frequency domain, the &ldquo;ringing&rdquo; is caused by chopping off the tails of sinc at the sides of the plot (in our case at <i>x</i> = &plusmn;8).&nbsp; Other duals of interest are <a href="javascript:enter('triangle(x)')">triangle(<i>x</i>)</a> with <a href="javascript:enter('pow(sinc(x), 2)')">sinc<sup>2</sup>(<i>x</i>)</a> and <a href="javascript:enter('gaussian(x)')">gaussian(<i>x</i>)</a> with itself.</p>
